@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a tomato splat with a dart through it -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#C9301A"
+        android:pathData="M54,30 C66,30 76,40 76,52 C76,66 66,76 54,76 C42,76 32,66 32,52 C32,40 42,30 54,30 Z" />
+    <path
+        android:fillColor="#E14A2B"
+        android:pathData="M52,34 C62,33 72,42 72,52 C72,63 63,71 53,71 C42,71 35,62 36,51 C37,41 43,35 52,34 Z" />
+    <path android:fillColor="#E14A2B" android:pathData="M28,40 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="#E14A2B" android:pathData="M80,66 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path android:fillColor="#E14A2B" android:pathData="M37,79 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <path android:fillColor="#E14A2B" android:pathData="M74,31 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+
+    <path
+        android:fillColor="#EEF2F5"
+        android:pathData="M50,50 L64,36 L69,41 L55,55 Z" />
+    <path
+        android:fillColor="#3F9184"
+        android:pathData="M66,34 L78,22 L80,32 L70,42 Z" />
+</vector>
