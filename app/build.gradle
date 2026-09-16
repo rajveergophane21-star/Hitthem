@@ -26,6 +26,13 @@ android {
 }
 
 dependencies {
+    // androidx brings in kotlin-stdlib 1.8.22, which absorbed the old
+    // kotlin-stdlib-jdk7/jdk8 artifacts, while an older transitive still asks for
+    // those at 1.6.21 - where the absorbed classes still live. Two copies of
+    // e.g. kotlin.collections.jdk8.CollectionsJDK8Kt fail checkDebugDuplicateClasses.
+    // The BOM aligns all three on 1.8.22, where jdk7/jdk8 are empty shims.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.activity:activity:1.9.2'
     implementation 'androidx.core:core:1.13.1'
