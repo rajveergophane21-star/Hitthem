@@ -121,7 +121,10 @@ button{font:inherit;color:inherit}
 .ammo button{display:flex;align-items:center;gap:7px;padding:7px 15px 7px 12px;cursor:pointer;
   border:0;border-radius:999px;background:transparent;color:var(--dim);
   font-size:13px;font-weight:500;transition:color .14s,background .14s}
-.ammo button svg{width:17px;height:17px;flex:0 0 auto}
+.ammo button svg{width:20px;height:20px;flex:0 0 auto;
+  opacity:.6;filter:saturate(.7);transition:opacity .14s,filter .14s}
+.ammo button:hover svg{opacity:.9;filter:saturate(.95)}
+.ammo button[aria-pressed="true"] svg{opacity:1;filter:none}
 .ammo button:hover{color:var(--fg)}
 .ammo button[aria-pressed="true"]{background:var(--on-bg);color:var(--on-fg);font-weight:600}
 #aDart{--on-bg:rgba(184,192,198,.16);--on-fg:#dfe5e9}
@@ -130,7 +133,8 @@ button{font:inherit;color:inherit}
 #aPaint{--on-bg:rgba(158,112,240,.19);--on-fg:#c6abff}
 #aRock{--on-bg:rgba(150,160,168,.17);--on-fg:#c3cbd1}
 #aSnow{--on-bg:rgba(180,210,240,.16);--on-fg:#cfe2f4}
-@media (max-width:420px){.ammo button{padding:9px 11px;gap:0}.ammo button span{display:none}}
+@media (max-width:420px){.ammo button{padding:9px 11px;gap:0}.ammo button span{display:none}
+  .ammo button svg{width:23px;height:23px}}
 @media (pointer:coarse){
   .ammo button{padding-block:10px}
   .lnk{padding:10px 11px}
@@ -193,27 +197,27 @@ button{font:inherit;color:inherit}
   <div class="tools">
     <div class="ammo" role="group" aria-label="Ammo">
       <button type="button" id="aDart" title="Dart" aria-pressed="true">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.2 20.8l4.6-1.4 10-10L21 3l-6.4 3.2-10 10-1.4 4.6z"/><path d="M8.6 19.1l-3.7-3.7" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-45 12 12)"><path d="M21.8 12l-5.8-1.6v3.2z" fill="#e9eff3"/><rect x="11" y="9.5" width="5.2" height="5" rx="1.5" fill="#aab2b8"/><path d="M11 12.2h5.2v1.8a1.5 1.5 0 01-1.5 1.5h-2.2a1.5 1.5 0 01-1.5-1.5z" fill="#798187"/><rect x="9.4" y="9.9" width="1.7" height="4.2" rx=".5" fill="#e8c46a"/><rect x="6.6" y="11.2" width="3.2" height="1.6" rx=".4" fill="#3f464b"/><path d="M2 11.9l5.2-5.3 1.1 5.3z" fill="#e0492c"/><path d="M2 12.1l5.2 5.3 1.1-5.3z" fill="#f2ece2"/></g></svg>
         <span>Dart</span>
       </button>
       <button type="button" id="aTom" title="Tomato" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="14.6" r="7.3"/><path d="M12 7.3V4.8M12 7.3L7.9 5.6M12 7.3l4.1-1.7M12 7.3l-4.6 1.1M12 7.3l4.6 1.1" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14.3" r="7.2" fill="#b62a17"/><circle cx="10.9" cy="13.3" r="6.1" fill="#e04a2c"/><ellipse cx="9.4" cy="11.2" rx="2.1" ry="1.3" transform="rotate(-38 9.4 11.2)" fill="#ff9b78" opacity=".72"/><g fill="#4e8f3a"><path d="M12 8.7L7.3 6.2l.7 3.2z"/><path d="M12 8.7l4.7-2.5-.7 3.2z"/><path d="M12 8.7l-1.7-3.5h3.4z"/></g><rect x="11.3" y="3.5" width="1.4" height="3" rx=".7" fill="#3f7a2f"/></svg>
         <span>Tomato</span>
       </button>
       <button type="button" id="aEgg" title="Egg" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2.8c3.6 0 6.6 5.6 6.6 10.1a6.6 6.6 0 01-13.2 0C5.4 8.4 8.4 2.8 12 2.8z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.9c3.6 0 6.7 5.6 6.7 10.1a6.7 6.7 0 01-13.4 0C5.3 8.5 8.4 2.9 12 2.9z" fill="#ddd0b6"/><path d="M11.2 4.3c3.1 0 5.9 4.9 5.9 8.9a5.9 5.9 0 01-11.8 0c0-4 2.8-8.9 5.9-8.9z" fill="#f9f3e6"/><ellipse cx="9.7" cy="10.3" rx="1.7" ry="2.6" transform="rotate(-18 9.7 10.3)" fill="#fff" opacity=".85"/></svg>
         <span>Egg</span>
       </button>
       <button type="button" id="aPaint" title="Paint balloon" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2.6s5.6 6.1 5.6 9.7a5.6 5.6 0 11-11.2 0C6.4 8.7 12 2.6 12 2.6z"/><circle cx="3.4" cy="15.6" r="1.15" fill="currentColor" stroke="none"/><circle cx="20.8" cy="17.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s5.5 6.1 5.5 9.6a5.5 5.5 0 01-11 0C6.5 9.1 12 3 12 3z" fill="#6f44c9"/><path d="M11.1 4.7s4 4.8 4 7.7a4 4 0 01-8 0c0-2.9 4-7.7 4-7.7z" fill="#9a6ef0"/><ellipse cx="9.7" cy="10.5" rx="1.3" ry="2.1" transform="rotate(-16 9.7 10.5)" fill="#fff" opacity=".6"/><path d="M12 3l-1.3 1.7h2.6z" fill="#5a34ab"/><circle cx="3.5" cy="15.8" r="1.2" fill="#9a6ef0"/><circle cx="20.7" cy="17.5" r="1.5" fill="#6f44c9"/></svg>
         <span>Paint</span>
       </button>
       <button type="button" id="aRock" title="Rock" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4.6 13.2l1-4.6 4.6-4.1 5.9 1.3 3.4 5.1-2.3 6.6-7.3 1.6z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 13.2l1-4.6 4.6-4.1 5.9 1.3 3.4 5.1-2.3 6.6-7.3 1.6z" fill="#6b7377"/><path d="M5.6 8.6l4.6-4.1 5.9 1.3-4.6 4.8z" fill="#98a1a7"/><path d="M11.5 10.6l4.6-4.8 3.4 5.1-2.3 6.6z" fill="#7d868b"/><path d="M4.6 13.2l6.9-2.6-1.6 7.5-.4 1.6z" fill="#596064"/><circle cx="8.1" cy="8.3" r=".85" fill="#b2bbc0" opacity=".65"/></svg>
         <span>Rock</span>
       </button>
       <button type="button" id="aSnow" title="Snowball" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="14.2" r="6.6"/><circle cx="4.6" cy="6.2" r="1.1" fill="currentColor" stroke="none"/><circle cx="18.8" cy="5.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="11.4" cy="3.2" r=".9" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14.2" r="6.7" fill="#c3d8ee"/><circle cx="11" cy="13.2" r="5.6" fill="#fbfdff"/><ellipse cx="9.6" cy="11.4" rx="1.8" ry="1.2" transform="rotate(-35 9.6 11.4)" fill="#fff"/><g fill="#dbeafe"><circle cx="4.6" cy="6.2" r="1.2"/><circle cx="18.8" cy="5.4" r="1.5"/><circle cx="11.4" cy="3.2" r="1"/></g></svg>
         <span>Snow</span>
       </button>
     </div>
@@ -221,14 +225,15 @@ button{font:inherit;color:inherit}
     <span class="tally" id="tally">0 thrown</span>
     <button class="lnk" type="button" id="photoBtn">Photo</button>
     <button class="lnk" type="button" id="wipeBtn">Wipe</button>
+    <button class="lnk" type="button" id="sizeBtn" title="How big things land">Size M</button>
     <button class="lnk" type="button" id="viewBtn" aria-pressed="false">Room</button>
     <button class="lnk" type="button" id="soundBtn" aria-pressed="true">Sound</button>
     <input type="file" id="fileInput" class="sr" accept="image/*">
   </div>
 
   <p class="hint">
-    <span class="wide">Drop a photo on the board, or hit <b>Photo</b> &middot; click and drag to keep throwing &middot; <b>1</b>&ndash;<b>6</b> pick ammo</span>
-    <span class="narrow">Tap <b>Photo</b> to pick a picture &middot; tap and drag to keep throwing &middot; use as many fingers as you like</span>
+    <span class="wide">Drop a photo on the board, or hit <b>Photo</b> &middot; click and drag to keep throwing &middot; <b>1</b>&ndash;<b>6</b> pick ammo &middot; <b>&minus;</b>/<b>+</b> size</span>
+    <span class="narrow">Tap <b>Photo</b> to pick a picture &middot; tap and drag to keep throwing &middot; <b>Size</b> if the splats look small</span>
   </p>
 </div>
 
@@ -278,6 +283,13 @@ button{font:inherit;color:inherit}
     rock:['#6d7376','#565c5f','#8a9195'],
     snow:['#ffffff','#f2f7fc']
   };
+
+  /* Splat scale. The board canvas is a fixed 1600x1200 no matter what photo is
+     loaded, so a splat is always the same fraction of the FRAME - which reads
+     tiny on a close-up and huge on a wide shot. SZ lets the thrower correct for
+     how close the subject is. */
+  var SIZES=[['S',.72],['M',1],['L',1.45],['XL',2]];
+  var szi=1,SZ=1;
 
   var S={ammo:'dart',count:0,live:[],runs:[],wob:[],flash:[],deb:[],
     ptr:{},nptr:0,kb:{x:W/2,y:H/2,on:false},started:false};
@@ -352,6 +364,7 @@ button{font:inherit;color:inherit}
   /* ---------------- paint helpers ---------------- */
   function blob(g,cx,cy,r,n,wob,fill,alpha){
     var pts=[],i,a,rv;
+    if(SZ>1)n=Math.min(30,Math.round(n*Math.sqrt(SZ)));
     for(i=0;i<n;i++){a=i/n*Math.PI*2;rv=r*(1+(Math.random()*2-1)*wob);
       pts.push([cx+Math.cos(a)*rv,cy+Math.sin(a)*rv]);}
     g.globalAlpha=alpha;g.fillStyle=fill;g.beginPath();
@@ -863,8 +876,8 @@ button{font:inherit;color:inherit}
       col=(kind==='paint')
         ?'hsl('+hue.toFixed(0)+',86%,'+(40+Math.random()*18).toFixed(0)+'%)'
         :pick(DEBRIS[kind]);
-      S.deb.push({x:ax+rand(-30,30),y:ay+rand(-20,20),
-        vx:rand(-70,70),vy:rand(-100,50),r:rand(7,19),col:col,
+      S.deb.push({x:ax+rand(-30,30)*SZ,y:ay+rand(-20,20)*SZ,
+        vx:rand(-70,70),vy:rand(-100,50),r:rand(7,19)*SZ,col:col,
         rot:rand(0,6.283),rv:rand(-6,6),
         land:AH*(FLOOR_TOP+.035)+Math.random()*AH*(.955-FLOOR_TOP-.035)});
     }
@@ -873,43 +886,43 @@ button{font:inherit;color:inherit}
   function land(p){
     var x=p.tx,y=p.ty,A=AMMO[p.kind],i,n;
     if(p.kind==='tomato'){
-      splatTomato(dctx,x,y,rand(.85,1.15));
+      splatTomato(dctx,x,y,rand(.85,1.15)*SZ);
       n=(Math.random()*3|0)+2;
-      for(i=0;i<n;i++)S.runs.push({x:x+rand(-42,42),y:y+rand(12,42),t:0,dur:rand(.55,1.2),
-        max:rand(30,140),w:rand(4,10),col:pick(TOM),al:.92});
+      for(i=0;i<n;i++)S.runs.push({x:x+rand(-42,42)*SZ,y:y+rand(12,42)*SZ,t:0,dur:rand(.55,1.2),
+        max:rand(30,140)*SZ,w:rand(4,10)*SZ,col:pick(TOM),al:.92});
       sfx.splat();
     }else if(p.kind==='egg'){
-      splatEgg(dctx,x,y,rand(.85,1.15));
+      splatEgg(dctx,x,y,rand(.85,1.15)*SZ);
       n=(Math.random()*3|0)+2;
-      for(i=0;i<n;i++)S.runs.push({x:x+rand(-42,42),y:y+rand(12,42),t:0,dur:rand(.7,1.5),
-        max:rand(35,160),w:rand(4,11),col:'#f2ecdd',al:.5});
-      S.runs.push({x:x+rand(-14,14),y:y+rand(14,30),t:0,dur:rand(.8,1.4),
-        max:rand(30,110),w:rand(5,9),col:'#f0b024',al:.9});
+      for(i=0;i<n;i++)S.runs.push({x:x+rand(-42,42)*SZ,y:y+rand(12,42)*SZ,t:0,dur:rand(.7,1.5),
+        max:rand(35,160)*SZ,w:rand(4,11)*SZ,col:'#f2ecdd',al:.5});
+      S.runs.push({x:x+rand(-14,14)*SZ,y:y+rand(14,30)*SZ,t:0,dur:rand(.8,1.4),
+        max:rand(30,110)*SZ,w:rand(5,9)*SZ,col:'#f0b024',al:.9});
       sfx.crack();
     }else if(p.kind==='paint'){
-      splatPaint(dctx,x,y,rand(.85,1.15),p.hue);
+      splatPaint(dctx,x,y,rand(.85,1.15)*SZ,p.hue);
       n=(Math.random()*3|0)+3;
-      for(i=0;i<n;i++)S.runs.push({x:x+rand(-44,44),y:y+rand(12,44),t:0,dur:rand(.6,1.5),
-        max:rand(40,190),w:rand(4,11),
+      for(i=0;i<n;i++)S.runs.push({x:x+rand(-44,44)*SZ,y:y+rand(12,44)*SZ,t:0,dur:rand(.6,1.5),
+        max:rand(40,190)*SZ,w:rand(4,11)*SZ,
         col:'hsl('+p.hue.toFixed(0)+',86%,'+(38+Math.random()*16).toFixed(0)+'%)',al:.94});
       sfx.pop();
     }else if(p.kind==='rock'){
-      smashRock(dctx,x,y,rand(.88,1.14));
-      for(i=0;i<3;i++)S.flash.push({x:x+rand(-24,24),y:y+rand(-24,24),t:0,dur:rand(.35,.6),
-        r0:14,r1:rand(90,150),col:'rgba(196,188,174,.32)',fill:true});
+      smashRock(dctx,x,y,rand(.88,1.14)*SZ);
+      for(i=0;i<3;i++)S.flash.push({x:x+rand(-24,24)*SZ,y:y+rand(-24,24)*SZ,t:0,dur:rand(.35,.6),
+        r0:14*SZ,r1:rand(90,150)*SZ,col:'rgba(196,188,174,.32)',fill:true});
       sfx.smash();
     }else if(p.kind==='snow'){
-      splatSnow(dctx,x,y,rand(.85,1.18));
-      S.flash.push({x:x,y:y,t:0,dur:.4,r0:20,r1:130,col:'rgba(236,245,253,.3)',fill:true});
+      splatSnow(dctx,x,y,rand(.85,1.18)*SZ);
+      S.flash.push({x:x,y:y,t:0,dur:.4,r0:20*SZ,r1:130*SZ,col:'rgba(236,245,253,.3)',fill:true});
       sfx.pff();
     }else{
       var st=stick(x,y);
-      dartHole(dctx,x,y,st.a,st.s);
-      S.wob.push({x:x,y:y,ang:st.a,sc:st.s,cols:p.cols,t:0,dur:.5});
+      dartHole(dctx,x,y,st.a,st.s*SZ);
+      S.wob.push({x:x,y:y,ang:st.a,sc:st.s*SZ,cols:p.cols,t:0,dur:.5});
       sfx.thunk();
     }
-    S.flash.push({x:x,y:y,t:0,dur:.2,r0:p.kind==='dart'?10:26,
-      r1:p.kind==='dart'?46:96,col:A.flash});
+    S.flash.push({x:x,y:y,t:0,dur:.2,r0:(p.kind==='dart'?10:26)*SZ,
+      r1:(p.kind==='dart'?46:96)*SZ,col:A.flash});
     punch(x,y,A.punch);
     buzz(A.punch);
     debris(p.kind,b2aX(x),b2aY(y),p.hue);
@@ -948,7 +961,7 @@ button{font:inherit;color:inherit}
       z=p.z0+(1-p.z0)*u;
       wx=p.wx0+(p.wx1-p.wx0)*u;wy=p.wy0+(p.wy1-p.wy0)*u;
       p.ox=p.sx;p.oy=p.sy;
-      p.z=z;p.sx=PX+wx/z;p.sy=PY+wy/z;p.sc=(BW/W)/z;
+      p.z=z;p.sx=PX+wx/z;p.sy=PY+wy/z;p.sc=(BW/W)/z*SZ;
       p.bx=(PX+wx-BX)/BW*W;p.by=(PY+wy-BY)/BH*H;
     }
 
@@ -980,7 +993,7 @@ button{font:inherit;color:inherit}
     for(i=0;i<S.live.length;i++){
       p=S.live[i];q=1-p.z;
       var cx=p.bx+SHX*q*(W/BW),cy=p.by+SHY*q*(H/BH);
-      sr=AMMO[p.kind].rad*(1+q*1.35);
+      sr=AMMO[p.kind].rad*SZ*(1+q*1.35);
       al=.52*Math.pow(p.z,1.4);
       g2=ctx.createRadialGradient(cx,cy,sr*.12,cx,cy,sr);
       g2.addColorStop(0,'rgba(4,3,2,'+al.toFixed(3)+')');
@@ -1097,6 +1110,8 @@ button{font:inherit;color:inherit}
   document.addEventListener('keydown',function(ev){
     if(ev.target&&/^(INPUT|TEXTAREA)$/.test(ev.target.tagName))return;
     if(ev.key>='1'&&ev.key<='6')setAmmo(ORDER[+ev.key-1]);
+    else if(ev.key==='-'||ev.key==='_')setSize(szi-1);
+    else if(ev.key==='+'||ev.key==='=')setSize(szi+1);
   });
 
   var BTN={dart:'#aDart',tomato:'#aTom',egg:'#aEgg',paint:'#aPaint',rock:'#aRock',snow:'#aSnow'};
@@ -1107,6 +1122,15 @@ button{font:inherit;color:inherit}
     for(var k in BTN)$(BTN[k]).setAttribute('aria-pressed',String(k===a));
   }
   ORDER.forEach(function(k){$(BTN[k]).addEventListener('click',function(){setAmmo(k);});});
+
+  function setSize(i){
+    var n=SIZES.length;
+    szi=((i%n)+n)%n;SZ=SIZES[szi][1];
+    var b=$('#sizeBtn');
+    b.textContent='Size '+SIZES[szi][0];
+    b.setAttribute('aria-label','Impact size '+SIZES[szi][0]+' of '+n+', activate to change');
+  }
+  $('#sizeBtn').addEventListener('click',function(){setSize(szi+1);});
 
   /* ---------------- photo ---------------- */
   var photoURL=null;
@@ -1186,6 +1210,7 @@ button{font:inherit;color:inherit}
     if(S.started)return;S.started=true;
     data=data||{};
     if(data.ammo)setAmmo(data.ammo);
+    setSize(typeof data.size==='number'?data.size:szi);
     if(typeof data.count==='number'){S.count=data.count;$('#tally').textContent=S.count+' thrown';}
     if(data.view==='room')setView('room');else setView('flat');
     paintPhoto();seed();
@@ -1194,7 +1219,7 @@ button{font:inherit;color:inherit}
   }
   try{
     if(window.claude&&window.claude.hot){
-      window.claude.hot.snapshot(function(){return {ammo:S.ammo,count:S.count,view:VIEW};});
+      window.claude.hot.snapshot(function(){return {ammo:S.ammo,count:S.count,view:VIEW,size:szi};});
       if(window.claude.hot.ready){
         window.claude.hot.ready(start);
         setTimeout(function(){start(window.claude.hot.data||{});},1200);
