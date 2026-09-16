@@ -24,6 +24,11 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Pin the packages: the action's default list includes the obsolete
+          # "tools" package, which Google removed from the SDK repository, so
+          # the default makes sdkmanager exit 1 and fails the job.
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
