@@ -40,6 +40,7 @@ keystore — see https://developer.android.com/studio/publish/app-signing
 | --- | --- |
 | Picking a photo | `WebChromeClient.onShowFileChooser` opens the system picker and hands the image back to the page's file input. Without this, `<input type="file">` silently does nothing in a WebView. |
 | Vibration | `VIBRATE` permission, so `navigator.vibrate` fires on each impact. |
+| Sizing the mess | A small `GrudgeHost` JS bridge runs `android.media.FaceDetector` over a downscaled copy of the picked photo and hands back the subject's face width, so a splat is sized against the face rather than against the frame. Entirely on-device; the picture still never leaves the phone. The bridge is why the `WebViewClient` refuses to navigate anywhere but `file:///android_asset/`. |
 | Fullscreen | Immersive mode; system bars come back on a swipe. |
 | Rotation | Handled via `configChanges`, so turning the phone does not reload the game. |
 | Screen sleep | `FLAG_KEEP_SCREEN_ON`. |

@@ -76,6 +76,8 @@ It is signed with the standard debug key — fine for your own phone, not for th
 | No `gradlew` / wrapper jar | The wrapper jar is a binary and is not committed. CI installs Gradle itself and runs `gradle assembleDebug`. Locally, run `gradle wrapper --gradle-version 8.7` once if you want `./gradlew`. |
 | `FLAG_KEEP_SCREEN_ON` + immersive mode | It is a game; the screen should not sleep and the bars should be out of the way. |
 | Offline | The only network fetch is the Archivo webfont from Google Fonts. Offline it falls back to the system font; everything else works with no connection. |
+| `addJavascriptInterface` + a locked-down `WebViewClient` | The bridge that measures the face is only as safe as whatever page can call it, so `shouldOverrideUrlLoading` blocks navigation to anything outside `file:///android_asset/`. Keep that if you add links to the page. |
+| `android.media.FaceDetector` is deprecated | Still the cheapest on-device detector that needs no dependency and no Play Services. It only finds frontal faces with both eyes visible; when it finds nothing the game just keeps its default size, so a miss costs nothing. Swap in ML Kit if the hit rate ever matters more than the APK size. |
 
 ---
 
@@ -98,3 +100,6 @@ that converges on the impact point. `RB` is the board's spring/pendulum state.
 - Release signing with a real keystore (needs your own key + repo secrets).
 - Bundling the Archivo font as a local `@font-face` for a fully offline typeface.
 - Saving the defaced photo to the gallery (needs a `MediaStore` bridge from JS).
+- Better face detection (ML Kit) if `android.media.FaceDetector` misses too often -
+  bundled model adds ~16 MB to the APK, the Play-Services variant adds almost nothing
+  but needs Play Services present.

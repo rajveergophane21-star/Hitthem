@@ -233,7 +233,7 @@ button{font:inherit;color:inherit}
 
   <p class="hint">
     <span class="wide">Drop a photo on the board, or hit <b>Photo</b> &middot; click and drag to keep throwing &middot; <b>1</b>&ndash;<b>6</b> pick ammo &middot; <b>&minus;</b>/<b>+</b> size</span>
-    <span class="narrow">Tap <b>Photo</b> to pick a picture &middot; tap and drag to keep throwing &middot; <b>Size</b> if the splats look small</span>
+    <span class="narrow">Tap <b>Photo</b> to pick a picture &middot; tap and drag to keep throwing &middot; <b>Size</b> is matched to the face</span>
   </p>
 </div>
 
@@ -289,7 +289,10 @@ button{font:inherit;color:inherit}
      tiny on a close-up and huge on a wide shot. SZ lets the thrower correct for
      how close the subject is. */
   var SIZES=[['S',.72],['M',1],['L',1.45],['XL',2]];
-  var szi=1,SZ=1;
+  var szi=1,SZ=1,autoSz=true,autoK=0;
+  /* A splat this fraction of the face's width reads as a solid hit. Derived from
+     what looked right by eye: 120 board px of tomato across a 1170 px face. */
+  var FACE_FILL=.2,BASE=120;
 
   var S={ammo:'dart',count:0,live:[],runs:[],wob:[],flash:[],deb:[],
     ptr:{},nptr:0,kb:{x:W/2,y:H/2,on:false},started:false};
@@ -1110,8 +1113,8 @@ button{font:inherit;color:inherit}
   document.addEventListener('keydown',function(ev){
     if(ev.target&&/^(INPUT|TEXTAREA)$/.test(ev.target.tagName))return;
     if(ev.key>='1'&&ev.key<='6')setAmmo(ORDER[+ev.key-1]);
-    else if(ev.key==='-'||ev.key==='_')setSize(szi-1);
-    else if(ev.key==='+'||ev.key==='=')setSize(szi+1);
+    else if(ev.key==='-'||ev.key==='_')cycleSize(-1);
+    else if(ev.key==='+'||ev.key==='=')cycleSize(1);
   });
 
   var BTN={dart:'#aDart',tomato:'#aTom',egg:'#aEgg',paint:'#aPaint',rock:'#aRock',snow:'#aSnow'};
@@ -1123,14 +1126,80 @@ button{font:inherit;color:inherit}
   }
   ORDER.forEach(function(k){$(BTN[k]).addEventListener('click',function(){setAmmo(k);});});
 
-  function setSize(i){
-    var n=SIZES.length;
-    szi=((i%n)+n)%n;SZ=SIZES[szi][1];
+  function applySize(){
     var b=$('#sizeBtn');
-    b.textContent='Size '+SIZES[szi][0];
-    b.setAttribute('aria-label','Impact size '+SIZES[szi][0]+' of '+n+', activate to change');
+    if(autoSz){
+      SZ=autoK||1;
+      b.textContent='Size Auto \u00d7'+(Math.round(SZ*100)/100);
+      b.title=autoK?'Matched to the face in the photo':'No face found - using the default size';
+      b.setAttribute('aria-label',(autoK?'Impact size automatic, matched to the face, ':
+        'Impact size automatic, no face found, default ')+(Math.round(SZ*100)/100)+' times, activate to change');
+    }else{
+      SZ=SIZES[szi][1];
+      b.textContent='Size '+SIZES[szi][0];
+      b.title='How big things land';
+      b.setAttribute('aria-label','Impact size '+SIZES[szi][0]+', activate to change');
+    }
   }
-  $('#sizeBtn').addEventListener('click',function(){setSize(szi+1);});
+  /* cycle: Auto, S, M, L, XL */
+  function cycleSize(d){
+    var n=SIZES.length+1,cur=autoSz?0:szi+1;
+    cur=((cur+d)%n+n)%n;
+    if(cur===0)autoSz=true;else{autoSz=false;szi=cur-1;}
+    applySize();
+  }
+  function setSize(i){
+    if(i<0){autoSz=true;}
+    else{autoSz=false;szi=Math.min(SIZES.length-1,Math.max(0,i|0));}
+    applySize();
+  }
+  $('#sizeBtn').addEventListener('click',function(){cycleSize(1);});
+
+  /* ---- face-matched sizing ----
+     fw is the subject's face width in SOURCE image pixels, 0 when nothing was
+     found. Scale it into board pixels the same way paintPhoto lays the photo
+     down, then size the splat as a fraction of the face rather than of the
+     frame - which is the whole point: a fixed fraction of the frame is what
+     made close-ups look under-splattered. */
+  function onFace(fw){
+    autoK=0;
+    if(fw>0&&srcImg&&srcImg.naturalWidth){
+      var ar=srcImg.naturalWidth/srcImg.naturalHeight,dw;
+      if(ar>W/H)dw=W;else dw=H*ar;
+      autoK=clamp(FACE_FILL*fw*(dw/srcImg.naturalWidth)/BASE,.6,2.6);
+    }
+    applySize();
+  }
+
+  function scanFace(){
+    autoK=0;applySize();
+    if(!srcImg||!srcImg.naturalWidth){onFace(0);return;}
+    var mx=720,k=Math.min(1,mx/Math.max(srcImg.naturalWidth,srcImg.naturalHeight));
+    var cw=Math.max(2,Math.round(srcImg.naturalWidth*k)&~1);
+    var ch=Math.max(2,Math.round(srcImg.naturalHeight*k));
+    var c=document.createElement('canvas');c.width=cw;c.height=ch;
+    c.getContext('2d').drawImage(srcImg,0,0,cw,ch);
+    var back=srcImg.naturalWidth/cw;
+    /* 1. the Android host: android.media.FaceDetector, on device, offline */
+    if(window.GrudgeHost&&window.GrudgeHost.measureFace){
+      window.__grudgeFace=function(w){onFace(w>0?w*back:0);};
+      try{window.GrudgeHost.measureFace(c.toDataURL('image/jpeg',.85).split(',')[1]);return;}
+      catch(e){}
+    }
+    /* 2. Shape Detection API where the engine has it */
+    if(window.FaceDetector){
+      try{
+        new window.FaceDetector({fastMode:false,maxDetectedFaces:8}).detect(c).then(function(fs){
+          var best=0,i;
+          for(i=0;i<(fs||[]).length;i++)if(fs[i].boundingBox.width>best)best=fs[i].boundingBox.width;
+          /* the box runs forehead to chin, wider than the cheekbones */
+          onFace(best>0?best*back*.86:0);
+        },function(){onFace(0);});
+        return;
+      }catch(e){}
+    }
+    onFace(0);
+  }
 
   /* ---------------- photo ---------------- */
   var photoURL=null;
@@ -1143,7 +1212,7 @@ button{font:inherit;color:inherit}
       setAspect(probe.naturalWidth/probe.naturalHeight);
       dctx.clearRect(0,0,W,H);fctx.clearRect(0,0,AW,1200);
       S.runs=[];S.wob=[];S.deb=[];S.flash=[];
-      paintPhoto();measure();
+      paintPhoto();measure();scanFace();
     };
     probe.onerror=function(){URL.revokeObjectURL(url);};
     if(photoURL)URL.revokeObjectURL(photoURL);
@@ -1210,7 +1279,7 @@ button{font:inherit;color:inherit}
     if(S.started)return;S.started=true;
     data=data||{};
     if(data.ammo)setAmmo(data.ammo);
-    setSize(typeof data.size==='number'?data.size:szi);
+    if(typeof data.size==='number')setSize(data.size);else applySize();
     if(typeof data.count==='number'){S.count=data.count;$('#tally').textContent=S.count+' thrown';}
     if(data.view==='room')setView('room');else setView('flat');
     paintPhoto();seed();
@@ -1219,7 +1288,7 @@ button{font:inherit;color:inherit}
   }
   try{
     if(window.claude&&window.claude.hot){
-      window.claude.hot.snapshot(function(){return {ammo:S.ammo,count:S.count,view:VIEW,size:szi};});
+      window.claude.hot.snapshot(function(){return {ammo:S.ammo,count:S.count,view:VIEW,size:autoSz?-1:szi};});
       if(window.claude.hot.ready){
         window.claude.hot.ready(start);
         setTimeout(function(){start(window.claude.hot.data||{});},1200);
