@@ -42,7 +42,7 @@ keystore — see https://developer.android.com/studio/publish/app-signing
 | Vibration | `VIBRATE` permission, so `navigator.vibrate` fires on each impact. |
 | Sizing the mess | A small `GrudgeHost` JS bridge runs `android.media.FaceDetector` over a downscaled copy of the picked photo and hands back the subject's face width, so a splat is sized against the face rather than against the frame. Entirely on-device; the picture still never leaves the phone. The bridge is why the `WebViewClient` refuses to navigate anywhere but `file:///android_asset/`. |
 | Fullscreen | Immersive mode; system bars come back on a swipe. |
-| Rotation | Handled via `configChanges`, so turning the phone does not reload the game. |
+| Rotation | Locked to portrait - the layout is built for a phone held upright. `configChanges` stays so any other config change (dark mode, keyboard) does not reload the page and wipe the mess. |
 | Screen sleep | `FLAG_KEEP_SCREEN_ON`. |
 | Back button | Finishes the Activity. |
 | Internet | Only used to fetch the Archivo webfont. Offline it falls back to the system font and everything else still works. |

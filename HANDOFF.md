@@ -71,7 +71,7 @@ It is signed with the standard debug key — fine for your own phone, not for th
 | --- | --- |
 | `WebChromeClient.onShowFileChooser` in `MainActivity` | Without it `<input type="file">` **silently does nothing** in a WebView and the "Photo" button is dead. This is the #1 reason wrapped web games break on Android. |
 | `VIBRATE` permission | `navigator.vibrate` fails silently without it; the game buzzes on every impact. |
-| `android:configChanges="orientation\|screenSize\|..."` | Without it, rotating the phone recreates the Activity, reloads the page and **wipes the mess you have thrown**. |
+| `android:screenOrientation="portrait"` + `configChanges` | The phone layout is portrait-only by design. `configChanges` still matters: without it any config change recreates the Activity, reloads the page and **wipes the mess you have thrown**. |
 | `minSdk 26` | Lets the launcher icon be adaptive-XML-only, so no PNG icon assets are needed anywhere. |
 | No `gradlew` / wrapper jar | The wrapper jar is a binary and is not committed. CI installs Gradle itself and runs `gradle assembleDebug`. Locally, run `gradle wrapper --gradle-version 8.7` once if you want `./gradlew`. |
 | `FLAG_KEEP_SCREEN_ON` + immersive mode | It is a game; the screen should not sleep and the bars should be out of the way. |
