@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.Bundle;
@@ -133,63 +134,74 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void measureFace(final String jpegBase64) {
             io.execute(new Runnable() {
-                @Override public void run() { report(widthOfLargestFace(jpegBase64)); }
+                @Override public void run() {
+                    float[] f = largestFace(jpegBase64);
+                    report(f[0], f[1], f[2]);
+                }
             });
         }
     }
 
+    /** @return {faceWidth, centreX, centreY} in the given image's pixels; width 0 when none. */
     @SuppressWarnings("deprecation") // android.media.FaceDetector: old, but on-device and dependency-free
-    private float widthOfLargestFace(String jpegBase64) {
+    private float[] largestFace(String jpegBase64) {
+        float[] none = {0f, 0f, 0f};
         Bitmap bmp = null;
         try {
             byte[] raw = Base64.decode(jpegBase64, Base64.DEFAULT);
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inPreferredConfig = Bitmap.Config.RGB_565; // FaceDetector accepts nothing else
             bmp = BitmapFactory.decodeByteArray(raw, 0, raw.length, o);
-            if (bmp == null) return 0f;
+            if (bmp == null) return none;
             if (bmp.getConfig() != Bitmap.Config.RGB_565) {
                 Bitmap c = bmp.copy(Bitmap.Config.RGB_565, false);
                 bmp.recycle();
                 bmp = c;
-                if (bmp == null) return 0f;
+                if (bmp == null) return none;
             }
             int w = bmp.getWidth() & ~1; // findFaces rejects an odd width
             int h = bmp.getHeight();
-            if (w < 2 || h < 2) return 0f;
+            if (w < 2 || h < 2) return none;
             if (w != bmp.getWidth()) {
                 Bitmap c = Bitmap.createBitmap(bmp, 0, 0, w, h);
                 bmp.recycle();
                 bmp = c;
-                if (bmp == null) return 0f;
+                if (bmp == null) return none;
             }
 
             int max = 8;
             FaceDetector.Face[] found = new FaceDetector.Face[max];
             int n = new FaceDetector(w, h, max).findFaces(bmp, found);
 
-            float best = 0f;
+            float[] best = none;
+            PointF mid = new PointF();
             for (int i = 0; i < n; i++) {
                 FaceDetector.Face f = found[i];
                 if (f == null || f.confidence() < 0.3f) continue;
                 // eye separation is the one solid measurement it gives us;
                 // cheekbone width runs about 2.2x that on an adult face.
-                float width = f.eyesDistance() * 2.2f;
-                if (width > best) best = width;
+                float eyes = f.eyesDistance();
+                float width = eyes * 2.2f;
+                if (width <= best[0]) continue;
+                f.getMidPoint(mid);
+                // getMidPoint sits on the eye line; drop toward the middle of
+                // the face so a crop centred here frames the whole head.
+                best = new float[]{ width, mid.x, mid.y + eyes * 0.4f };
             }
             return best;
         } catch (Throwable t) {
-            return 0f; // a miss is not worth crashing a game over
+            return none; // a miss is not worth crashing a game over
         } finally {
             if (bmp != null && !bmp.isRecycled()) bmp.recycle();
         }
     }
 
-    private void report(final float faceWidth) {
+    private void report(final float faceWidth, final float cx, final float cy) {
         runOnUiThread(new Runnable() {
             @Override public void run() {
                 if (web == null) return;
-                web.evaluateJavascript(
-                        "window.__grudgeFace&&window.__grudgeFace(" + faceWidth + ")", null);
+                web.evaluateJavascript("window.__grudgeFace&&window.__grudgeFace("
+                        + faceWidth + "," + cx + "," + cy + ")", null);
             }
         });
     }

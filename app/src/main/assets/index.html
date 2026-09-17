@@ -11,7 +11,7 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 </head>
-<body>
+<body class="nophoto">
 <title>Grudge Booth</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap">
 <style>
@@ -116,6 +116,13 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
   background:rgba(15,14,13,.84);box-shadow:inset 0 0 0 2px var(--line-hi)}
 .scene.dragging .veil{opacity:1}
 .veil span{font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg)}
+/* shown until a photo is picked; never eats a throw */
+.cta{position:absolute;inset:0;z-index:8;display:none;pointer-events:none;
+  align-items:flex-end;justify-content:center;padding-bottom:7%}
+body.nophoto .cta{display:flex}
+.cta span{padding:9px 16px;border-radius:999px;font-size:12.5px;font-weight:600;
+  color:#f2ede6;background:rgba(10,9,8,.72);border:1px solid var(--line-hi);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 
 /* ---------- tools ---------- */
 .tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
@@ -167,6 +174,8 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
   color:var(--dim);font-size:13px;font-weight:500;transition:color .14s,background .14s,opacity .14s}
 @media (hover:hover){.lnk:hover{color:var(--fg);background:rgba(255,255,255,.055)}}
 .lnk[aria-pressed="false"]{opacity:.45}
+body.nophoto #photoBtn{color:#ffdca8;background:rgba(255,196,106,.14)}
+#wipeBtn.arm{color:#ff9b82;background:rgba(224,73,44,.18)}
 .hint{margin:0;text-align:center;font-size:12px;color:#6d6862}
 .hint b{color:#9b958d;font-weight:600}
 .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -257,6 +266,7 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     </div>
     <canvas id="airCv" aria-hidden="true"></canvas>
     <div class="veil"><span>Drop it</span></div>
+    <div class="cta" id="cta" aria-hidden="true"><span>Pick a photo to get started</span></div>
   </div>
 
   <div class="tools">
@@ -370,6 +380,43 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
   /* A splat this fraction of the face's width reads as a solid hit. Derived from
      what looked right by eye: 120 board px of tomato across a 1170 px face. */
   var FACE_FILL=.2,BASE=120;
+
+  /* ---- how much of the screen the picture gets ----
+     The board IS the photo: every throw has to land on it. But fitting a whole
+     photo inside a portrait phone strands it between dead bands - a landscape
+     shot was getting 30% of the screen. So let the board take the screen's
+     shape and crop the photo to cover it, capped so no more than 1-MIN_VISIBLE
+     of the picture is ever hidden. Portrait shots come out full-bleed;
+     landscape ones give up 40% of their width instead of two thirds of the
+     screen. Desktop has the room to show everything, so it still does. */
+  var MIN_VISIBLE=.6;
+  var FACE={w:0,cx:0,cy:0};
+  function phone(){
+    try{return window.matchMedia('(max-width:560px)').matches;}catch(e){return false;}
+  }
+  function availAR(){
+    var t=document.querySelector('.tools'),h=document.querySelector('.hint'),used=0;
+    if(t)used+=t.getBoundingClientRect().height;
+    if(h&&h.offsetParent)used+=h.getBoundingClientRect().height;
+    var w=document.documentElement.clientWidth||1;
+    return w/Math.max(140,(window.innerHeight||800)-used);
+  }
+  function boardAR(photoAR){
+    if(!phone())return photoAR;
+    return clamp(availAR(),photoAR*MIN_VISIBLE,photoAR/MIN_VISIBLE);
+  }
+  /* where the photo sits inside the board, cropped to cover and pulled so the
+     face stays in frame */
+  function coverBox(){
+    var iw=srcImg.naturalWidth,ih=srcImg.naturalHeight,ar=iw/ih,dw,dh;
+    if(ar>W/H){dh=H;dw=H*ar;}else{dw=W;dh=W/ar;}
+    var ox=(W-dw)/2,oy=(H-dh)/2,k=dw/iw;
+    if(FACE.w>0){
+      ox=clamp(W/2-FACE.cx*k,W-dw,0);
+      oy=clamp(H/2-FACE.cy*k,H-dh,0);
+    }
+    return {dw:dw,dh:dh,ox:ox,oy:oy,k:k};
+  }
 
   var S={ammo:'dart',count:0,live:[],runs:[],wob:[],flash:[],deb:[],
     ptr:{},nptr:0,kb:{x:W/2,y:H/2,on:false},started:false};
@@ -818,9 +865,8 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
   function paintPhoto(){
     pctx.clearRect(0,0,W,H);
     if(srcImg&&srcImg.naturalWidth){
-      var ar=srcImg.naturalWidth/srcImg.naturalHeight,dw,dh;
-      if(ar>W/H){dw=W;dh=W/ar;}else{dh=H;dw=H*ar;}
-      pctx.drawImage(srcImg,(W-dw)/2,(H-dh)/2,dw,dh);
+      var b=coverBox();
+      pctx.drawImage(srcImg,b.ox,b.oy,b.dw,b.dh);
     }else drawFace(pctx);
   }
 
@@ -836,7 +882,7 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
 
   /* the board is the shape of the picture: no letterbox, every throw lands on it */
   function setAspect(a){
-    ASPECT=clamp(a,.62,1.9);
+    ASPECT=clamp(boardAR(a),.5,2.2);
     H=Math.round(W/ASPECT);
     cv.height=H;dec.height=H;pcv.height=H;
     document.documentElement.style.setProperty('--ar',ASPECT.toFixed(4));
@@ -1145,22 +1191,37 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     return {x:(ev.clientX-b.left)/b.width*W,y:(ev.clientY-b.top)/b.height*H};
   }
   function drop(id){if(S.ptr[id]){delete S.ptr[id];S.nptr--;}}
-  cv.addEventListener('pointerdown',function(ev){
+
+  /* Listen on the whole scene, not just the canvas. layout() can leave the
+     board a hair narrower than the scene, and the board swings away from the
+     finger after every hit - so taps near the edge were landing on .pane and
+     being thrown away silently. In flat view the picture is the screen, so
+     clamp any stray tap onto it; in room view the board really is a smaller
+     thing on a wall, so only count taps that hit it. */
+  function aimAt(ev){
+    var b=rig.getBoundingClientRect();
+    if(!b.width||!b.height)return null;
+    var x=(ev.clientX-b.left)/b.width*W, y=(ev.clientY-b.top)/b.height*H;
+    if(VIEW==='room'&&(x<0||y<0||x>W||y>H))return null;
+    return {x:clamp(x,0,W),y:clamp(y,0,H)};
+  }
+  scene.addEventListener('pointerdown',function(ev){
+    var c=aimAt(ev);if(!c)return;
     ev.preventDefault();
-    try{cv.setPointerCapture(ev.pointerId);}catch(e){}
+    try{scene.setPointerCapture(ev.pointerId);}catch(e){}
     cv.focus({preventScroll:true});
     S.kb.on=false;
-    var c=toBoard(ev);
     if(!S.ptr[ev.pointerId])S.nptr++;
     S.ptr[ev.pointerId]={x:c.x,y:c.y,last:performance.now()};
     throwAt(c.x,c.y);
   });
-  cv.addEventListener('pointermove',function(ev){
+  scene.addEventListener('pointermove',function(ev){
     var pt=S.ptr[ev.pointerId];if(!pt)return;
-    var c=toBoard(ev);pt.x=c.x;pt.y=c.y;
+    var c=aimAt(ev);if(!c)return;
+    pt.x=c.x;pt.y=c.y;
   });
   ['pointerup','pointercancel','lostpointercapture'].forEach(function(t){
-    cv.addEventListener(t,function(ev){drop(ev.pointerId);});
+    scene.addEventListener(t,function(ev){drop(ev.pointerId);});
   });
   window.addEventListener('blur',function(){S.ptr={};S.nptr=0;});
 
@@ -1238,19 +1299,19 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
      down, then size the splat as a fraction of the face rather than of the
      frame - which is the whole point: a fixed fraction of the frame is what
      made close-ups look under-splattered. */
-  function onFace(fw){
+  function onFace(fw,cx,cy){
+    FACE={w:fw||0,cx:cx||0,cy:cy||0};
     autoK=0;
-    if(fw>0&&srcImg&&srcImg.naturalWidth){
-      var ar=srcImg.naturalWidth/srcImg.naturalHeight,dw;
-      if(ar>W/H)dw=W;else dw=H*ar;
-      autoK=clamp(FACE_FILL*fw*(dw/srcImg.naturalWidth)/BASE,.6,2.6);
+    if(FACE.w>0&&srcImg&&srcImg.naturalWidth){
+      autoK=clamp(FACE_FILL*FACE.w*coverBox().k/BASE,.6,2.6);
     }
+    paintPhoto();   /* re-centre the crop now the face is known */
     applySize();
   }
 
   function scanFace(){
     autoK=0;applySize();
-    if(!srcImg||!srcImg.naturalWidth){onFace(0);return;}
+    if(!srcImg||!srcImg.naturalWidth){onFace(0,0,0);return;}
     var mx=720,k=Math.min(1,mx/Math.max(srcImg.naturalWidth,srcImg.naturalHeight));
     var cw=Math.max(2,Math.round(srcImg.naturalWidth*k)&~1);
     var ch=Math.max(2,Math.round(srcImg.naturalHeight*k));
@@ -1259,7 +1320,8 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     var back=srcImg.naturalWidth/cw;
     /* 1. the Android host: android.media.FaceDetector, on device, offline */
     if(window.GrudgeHost&&window.GrudgeHost.measureFace){
-      window.__grudgeFace=function(w){onFace(w>0?w*back:0);};
+      window.__grudgeFace=function(w,cx,cy){
+        onFace(w>0?w*back:0,(cx||0)*back,(cy||0)*back);};
       try{window.GrudgeHost.measureFace(c.toDataURL('image/jpeg',.85).split(',')[1]);return;}
       catch(e){}
     }
@@ -1267,15 +1329,17 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     if(window.FaceDetector){
       try{
         new window.FaceDetector({fastMode:false,maxDetectedFaces:8}).detect(c).then(function(fs){
-          var best=0,i;
-          for(i=0;i<(fs||[]).length;i++)if(fs[i].boundingBox.width>best)best=fs[i].boundingBox.width;
+          var best=null,i,bb;
+          for(i=0;i<(fs||[]).length;i++){bb=fs[i].boundingBox;
+            if(!best||bb.width>best.width)best=bb;}
           /* the box runs forehead to chin, wider than the cheekbones */
-          onFace(best>0?best*back*.86:0);
-        },function(){onFace(0);});
+          if(best)onFace(best.width*back*.86,(best.x+best.width/2)*back,(best.y+best.height/2)*back);
+          else onFace(0,0,0);
+        },function(){onFace(0,0,0);});
         return;
       }catch(e){}
     }
-    onFace(0);
+    onFace(0,0,0);
   }
 
   /* ---------------- photo ---------------- */
@@ -1287,6 +1351,8 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     probe.onload=function(){
       srcImg=probe;img.src=url;img.hidden=false;
       $('#ambient').style.backgroundImage='url("'+url+'")';
+      FACE={w:0,cx:0,cy:0};
+      document.body.classList.remove('nophoto');
       setAspect(probe.naturalWidth/probe.naturalHeight);
       dctx.clearRect(0,0,W,H);fctx.clearRect(0,0,AW,1200);
       S.runs=[];S.wob=[];S.deb=[];S.flash=[];
@@ -1321,9 +1387,28 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     }
   });
 
+  /* Wipe throws away every hit with no undo, and it sits a thumb-width from
+     the ammo. Ask once, and forget the question after a few seconds. */
+  var wipeArm=0,wipeT=0;
+  function disarmWipe(){
+    wipeArm=0;clearTimeout(wipeT);
+    $('#wipeBtn').classList.remove('arm');
+    $('#wipeBtn').querySelector('.lbl').textContent='Wipe';
+  }
   $('#wipeBtn').addEventListener('click',function(){
+    var empty=!S.count&&!S.runs.length&&!S.wob.length&&!S.deb.length;
+    if(!wipeArm&&!empty){
+      wipeArm=1;
+      this.classList.add('arm');
+      this.querySelector('.lbl').textContent='Sure?';
+      clearTimeout(wipeT);wipeT=setTimeout(disarmWipe,3000);
+      return;
+    }
+    disarmWipe();
     dctx.clearRect(0,0,W,H);fctx.clearRect(0,0,AW,AH);
     S.runs=[];S.wob=[];S.deb=[];
+    S.count=0;$('#tally').textContent='0 thrown';
+    buzz(.5);
   });
   $('#viewBtn').addEventListener('click',function(){
     setView(VIEW==='room'?'flat':'room');
@@ -1359,6 +1444,7 @@ button{font:inherit;color:inherit;touch-action:manipulation;-webkit-touch-callou
     if(data.ammo)setAmmo(data.ammo);
     if(typeof data.size==='number')setSize(data.size);else applySize();
     if(typeof data.count==='number'){S.count=data.count;$('#tally').textContent=S.count+' thrown';}
+    if(!srcImg&&phone())setAspect(availAR());
     if(data.view==='room')setView('room');else setView('flat');
     paintPhoto();seed();
     try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measure);}catch(e){}
