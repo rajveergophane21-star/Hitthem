@@ -47,6 +47,28 @@ keystore — see https://developer.android.com/studio/publish/app-signing
 | Back button | Finishes the Activity. |
 | Internet | Only used to fetch the Archivo webfont. Offline it falls back to the system font and everything else still works. |
 
+## Screen mode - throwing over other apps
+
+**Screen** in the toolbar asks for "display over other apps", then starts
+`OverlayService`, which puts two windows on top of everything else: a transparent
+WebView running `assets/overlay.html`, and a draggable tomato bubble.
+
+The big window is `FLAG_NOT_TOUCHABLE` by default, so the app underneath scrolls
+normally and the splats just sit in front of it. Tapping the bubble makes it
+touchable so taps become throws, and it hands scrolling back on its own 1.5s after
+the last throw. Long-press the bubble to wipe, drag it to move it.
+
+Two limits are structural, not bugs:
+
+- **Splats stick to the screen, not to what is under them.** Nothing lets one app
+  read another's scroll position or content, so when the feed moves the splats do
+  not. Tracking content would mean continuous screen capture and optical flow.
+- **You cannot throw and scroll at once.** A window either takes a touch or lets it
+  through, and no API hands a touch to another app, so it has to be a mode.
+
+`assets/splats.js` is the splat art, extracted verbatim from `index.html` so both
+the game and the overlay draw the same mess from one source.
+
 ## Updating the game
 
 Re-export the page and overwrite `app/src/main/assets/index.html`, keeping its

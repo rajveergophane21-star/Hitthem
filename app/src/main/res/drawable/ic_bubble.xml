@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the floating tomato: a dark disc so it reads on any wallpaper, video or
+     white page, with the same tomato as the ammo picker sitting on it -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="56dp" android:height="56dp"
+    android:viewportWidth="56" android:viewportHeight="56">
+    <path android:fillColor="#B3000000"
+        android:pathData="M28,3a25,25 0 1,0 0.1,0z"/>
+    <path android:strokeColor="#40FFFFFF" android:strokeWidth="1.6"
+        android:fillColor="#00000000"
+        android:pathData="M28,3.8a24.2,24.2 0 1,0 0.1,0z"/>
+    <path android:fillColor="#B62A17"
+        android:pathData="M28,32.6m-15.6,0a15.6,15.6 0 1,0 31.2,0a15.6,15.6 0 1,0 -31.2,0"/>
+    <path android:fillColor="#E04A2C"
+        android:pathData="M25.6,30.4m-13.2,0a13.2,13.2 0 1,0 26.4,0a13.2,13.2 0 1,0 -26.4,0"/>
+    <path android:fillColor="#FF9B78" android:fillAlpha="0.72"
+        android:pathData="M21.5,25.6m-4.6,-2.8a4.6,2.8 0 1,0 9.2,0a4.6,2.8 0 1,0 -9.2,0"/>
+    <group>
+        <path android:fillColor="#4E8F3A" android:pathData="M28,19.6L17.8,14.2l1.5,6.9z"/>
+        <path android:fillColor="#4E8F3A" android:pathData="M28,19.6l10.2,-5.4l-1.5,6.9z"/>
+        <path android:fillColor="#4E8F3A" android:pathData="M28,19.6l-3.7,-7.6h7.4z"/>
+    </group>
+    <path android:fillColor="#3F7A2F"
+        android:pathData="M26.5,7.6h3v6.6h-3z"/>
+</vector>

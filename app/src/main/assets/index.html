@@ -205,7 +205,7 @@ body.nophoto #photoBtn{color:#ffdca8;background:rgba(255,196,106,.14)}
   .ammo button svg{width:25px;height:25px}
 
   /* five equal targets, icon over label, 48dp tall */
-  .acts{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:100%}
+  .acts{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;width:100%}
   .lnk{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
     min-height:50px;padding:6px 2px;border-radius:12px;font-size:10.5px;font-weight:600;
     letter-spacing:.01em;line-height:1.1}
@@ -314,6 +314,10 @@ body.nophoto #photoBtn{color:#ffdca8;background:rgba(255,196,106,.14)}
       <button class="lnk" type="button" id="soundBtn" aria-pressed="true">
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.4h3.4L12 5.6v12.8L7.4 14.6H4z"/><path d="M15.4 9.3a4 4 0 010 5.4"/><path d="M17.9 7.2a7.2 7.2 0 010 9.6"/></svg>
         <span class="lbl">Sound</span></button>
+      <button class="lnk" type="button" id="screenBtn" hidden
+              title="Throw over other apps">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.6" width="12" height="18.8" rx="2.4"/><path d="M10.4 18.6h3.2"/><path d="M9 6.4l1.8 2.6M15 6.4l-1.8 2.6"/></svg>
+        <span class="lbl">Screen</span></button>
     </div>
     <input type="file" id="fileInput" class="sr" accept="image/*">
   </div>
@@ -1292,6 +1296,16 @@ body.nophoto #photoBtn{color:#ffdca8;background:rgba(255,196,106,.14)}
     applySize();
   }
   $('#sizeBtn').addEventListener('click',function(){cycleSize(1);});
+
+  /* Screen mode only exists inside the Android wrapper - the page has no way
+     to draw over other apps on its own, so the button stays hidden elsewhere. */
+  try{
+    if(window.GrudgeHost&&GrudgeHost.canOverlay&&GrudgeHost.canOverlay())
+      $('#screenBtn').hidden=false;
+  }catch(e){}
+  $('#screenBtn').addEventListener('click',function(){
+    try{GrudgeHost.screenMode();}catch(e){}
+  });
 
   /* ---- face-matched sizing ----
      fw is the subject's face width in SOURCE image pixels, 0 when nothing was

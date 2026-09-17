@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<style>
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  #mess{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  /* only shown while the overlay is taking touches, so you can tell at a
+     glance whether a tap will splat or reach the app underneath */
+  #edge{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .16s;
+    box-shadow:inset 0 0 0 2px rgba(224,73,44,.55),inset 0 0 34px rgba(224,73,44,.16)}
+  body.live #edge{opacity:1}
+</style>
+</head>
+<body>
+<canvas id="mess"></canvas>
+<div id="edge"></div>
+<script src="splats.js"></script>
+<script>
+(function(){
+  'use strict';
+  var cv=document.getElementById('mess'),ctx=cv.getContext('2d');
+  var S=window.Splats,DPR=1,W=0,H=0;
+  var AMMO=['tomato','egg','paint','rock','snow'],kind='tomato';
+
+  function size(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=Math.round(innerWidth*DPR);H=Math.round(innerHeight*DPR);
+    /* keep what has already been thrown across a resize */
+    var keep=document.createElement('canvas');
+    keep.width=cv.width||1;keep.height=cv.height||1;
+    if(cv.width)keep.getContext('2d').drawImage(cv,0,0);
+    cv.width=W;cv.height=H;
+    if(keep.width>1)ctx.drawImage(keep,0,0,keep.width,keep.height,0,0,W,H);
+  }
+  size();
+  addEventListener('resize',size);
+
+  /* Splats are sized off the screen, not off a face: there is no way to see
+     what is underneath, so pick something that reads on a phone screen. */
+  function scaleFor(){return Math.max(.55,Math.min(1.5,W/900))*DPR*.9;}
+
+  function splat(x,y){
+    var sc=scaleFor()*(.85+Math.random()*.3);
+    S.setScale(sc);
+    var f=S[kind];
+    if(!f)return;
+    if(kind==='paint')f(ctx,x,y,sc,S.pick(S.PAINTS)+S.rand(-9,9));
+    else f(ctx,x,y,sc);
+    try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}
+    if(window.GrudgeOverlay&&GrudgeOverlay.thrown)GrudgeOverlay.thrown();
+  }
+
+  var ptr={},n=0,last={};
+  cv.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    try{cv.setPointerCapture(e.pointerId);}catch(_){}
+    ptr[e.pointerId]=1;n++;
+    last[e.pointerId]=0;
+    splat(e.clientX*DPR,e.clientY*DPR);
+  });
+  cv.addEventListener('pointermove',function(e){
+    if(!ptr[e.pointerId])return;
+    /* drag to keep throwing, but not faster than the game does */
+    var t=performance.now();
+    if(t-(last[e.pointerId]||0)<145)return;
+    last[e.pointerId]=t;
+    splat(e.clientX*DPR,e.clientY*DPR);
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(function(t){
+    cv.addEventListener(t,function(e){
+      if(ptr[e.pointerId]){delete ptr[e.pointerId];n--;}
+    });
+  });
+
+  /* called from the service */
+  window.GB={
+    ammo:function(k){if(S[k])kind=k;},
+    wipe:function(){ctx.clearRect(0,0,cv.width,cv.height);},
+    live:function(on){document.body.classList.toggle('live',!!on);}
+  };
+})();
+</script>
+</body>
+</html>

@@ -95,7 +95,24 @@ that converges on the impact point. `RB` is the board's spring/pendulum state.
 
 ---
 
-## 6. Wish list / not done
+## 6. Screen mode
+
+`OverlayService` + `assets/overlay.html` draw the splats over other apps via
+`SYSTEM_ALERT_WINDOW`. See the README for how the two windows and the touch mode
+work, and for the two things it structurally cannot do (splats do not follow the
+content underneath, and throwing is a mode rather than something you do while
+scrolling).
+
+Worth knowing if you touch it:
+
+| Thing | Why it matters |
+| --- | --- |
+| `FLAG_NOT_TOUCHABLE` by default | The whole design rests on this. Without it the overlay eats every touch and the phone is unusable until you kill the app. |
+| `foregroundServiceType="specialUse"` | targetSdk 34 rejects a foreground service with no type, and there is no type for "draws on top", so it is specialUse plus the `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` note. Google Play scrutinises this; sideloading does not care. |
+| Android 12+ overlay opt-out | An app can hide overlays over itself with `HIDE_OVERLAY_WINDOWS`. If some app shows no splats, that is why, and there is nothing to do about it. |
+| `splats.js` is generated | Extracted verbatim from `index.html`. If you change a splat in the game, re-extract rather than hand-editing both. |
+
+## 7. Wish list / not done
 
 - Release signing with a real keystore (needs your own key + repo secrets).
 - Bundling the Archivo font as a local `@font-face` for a fully offline typeface.

@@ -7,7 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.view.View;
 import android.view.WindowManager;
@@ -40,6 +42,18 @@ public class MainActivity extends AppCompatActivity {
     private WebView web;
     private ValueCallback<Uri[]> pendingFiles;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+
+    /** Comes back from the "display over other apps" settings screen. */
+    private final ActivityResultLauncher<Intent> overlayPerm =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    (ActivityResult r) -> {
+                        if (OverlayService.allowed(this)) startOverlay();
+                        else toast("Screen mode needs permission to draw over other apps");
+                    });
+
+    private final ActivityResultLauncher<String> notifPerm =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    granted -> { /* the overlay runs either way; this only shows its notice */ });
 
     /** Hands the picked image back to the page's <input type="file">. */
     private final ActivityResultLauncher<Intent> picker =
@@ -131,6 +145,32 @@ public class MainActivity extends AppCompatActivity {
      * which case the game just keeps its default size.
      */
     private class Host {
+        /** The page only offers Screen mode when this is here to answer. */
+        @JavascriptInterface
+        public boolean canOverlay() { return true; }
+
+        @JavascriptInterface
+        public void screenMode() {
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    notifPerm.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+                }
+                if (OverlayService.allowed(MainActivity.this)) {
+                    startOverlay();
+                } else {
+                    // Android will not grant this from code; the user has to flip it.
+                    toast("Allow Grudge Booth to draw over other apps, then come back");
+                    try {
+                        overlayPerm.launch(new Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + getPackageName())));
+                    } catch (Exception e) {
+                        overlayPerm.launch(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+                    }
+                }
+            });
+        }
+
         @JavascriptInterface
         public void measureFace(final String jpegBase64) {
             io.execute(new Runnable() {
@@ -194,6 +234,22 @@ public class MainActivity extends AppCompatActivity {
         } finally {
             if (bmp != null && !bmp.isRecycled()) bmp.recycle();
         }
+    }
+
+    private void startOverlay() {
+        try {
+            Intent i = new Intent(this, OverlayService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(i);
+            else startService(i);
+            toast("Screen mode on - tap the tomato anywhere to throw");
+            moveTaskToBack(true);   // get out of the way so they can open Instagram
+        } catch (Exception e) {
+            toast("Could not start screen mode");
+        }
+    }
+
+    private void toast(String s) {
+        android.widget.Toast.makeText(this, s, android.widget.Toast.LENGTH_LONG).show();
     }
 
     private void report(final float faceWidth, final float cx, final float cy) {
